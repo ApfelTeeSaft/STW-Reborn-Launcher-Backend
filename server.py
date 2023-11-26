@@ -67,23 +67,24 @@ async def check_access(ctx: lightbulb.SlashContext) -> None:
         print(f"Error: {e}")
         await ctx.respond("Error checking server status.")
 
+#broken
 #unlock the launcher
-@bot.command()
-@lightbulb.command("unlock-launcher", "Unlock the Launcher")
-@lightbulb.implements(lightbulb.SlashCommand)
-async def unlock_launcher(ctx: lightbulb.SlashContext) -> None:
-    global access_status_message
-    access_status_message = 'Access Allowed'
-    await ctx.respond('Access status changed to Allowed.')
+#@bot.command()
+#@lightbulb.command("unlock-launcher", "Unlock the Launcher")
+#@lightbulb.implements(lightbulb.SlashCommand)
+#async def unlock_launcher(ctx: lightbulb.SlashContext) -> None:
+#    global access_status_message
+#    access_status_message = 'Access Allowed'
+#    await ctx.respond('Access status changed to Allowed.')
 
-#lock the launcher
-@bot.command()
-@lightbulb.command("lock-launcher", "Lock the launcher")
-@lightbulb.implements(lightbulb.SlashCommand)
-async def lock_launcher(ctx: lightbulb.SlashContext) -> None:
-    global access_status_message
-    access_status_message = 'Access Denied'
-    await ctx.respond('Access status changed to Denied.')
+#broken
+#@bot.command()
+#@lightbulb.command("lock-launcher", "Lock the launcher")
+#@lightbulb.implements(lightbulb.SlashCommand)
+#async def lock_launcher(ctx: lightbulb.SlashContext) -> None:
+#    global access_status_message
+#    access_status_message = 'Access Denied'
+#    await ctx.respond('Access status changed to Denied.')
 
 #announcement adder
 @bot.command()
