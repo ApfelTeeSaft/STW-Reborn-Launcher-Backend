@@ -5,6 +5,7 @@ import lightbulb
 import requests
 import json
 from datetime import datetime
+import validators
 
 # Discord bot
 bot = lightbulb.BotApp(token="your_token_here", intents=hikari.Intents.ALL)
@@ -17,9 +18,25 @@ access_status_message = 'Access Allowed'  # Default access status
 
 announcements_file = "announcements.json"
 
+url_file = "url.json"
+
 def save_announcements():
     with open(announcements_file, 'w') as file:
         json.dump(announcements_data, file)
+
+def load_url():
+    global url_data
+    try:
+        with open(url_file, 'r') as file:
+            data = file.read()
+            url_data = json.loads(data) if data else []
+    except (FileNotFoundError, json.decoder.JSONDecodeError):
+        url_data = []
+    return url_data
+
+def save_url():
+    with open(url_file, 'w') as file:
+        json.dump(url_data, file, default=str)
 
 def load_announcements():
     global announcements_data
@@ -35,7 +52,7 @@ load_announcements()
 @app.route('/api/version', methods=['GET'])
 def get_version():
     # You can replace this with your actual version
-    return jsonify(version='0.2')
+    return jsonify(version='0.3')
 
 @app.route('/api/access_status', methods=['GET'])
 def get_access_status():
@@ -45,6 +62,10 @@ def get_access_status():
 def get_announcements():
     sorted_announcements = sorted(announcements_data, key=lambda x: x['datetime'], reverse=True)
     return jsonify({"announcements": sorted_announcements})
+
+@app.route('/api/download', methods=['GET'])
+def download():
+    return jsonify(downloadurl=load_url())
 
 #check server status
 @bot.command()
@@ -67,34 +88,15 @@ async def check_access(ctx: lightbulb.SlashContext) -> None:
         print(f"Error: {e}")
         await ctx.respond("Error checking server status.")
 
-#broken
-#unlock the launcher
-#@bot.command()
-#@lightbulb.command("unlock-launcher", "Unlock the Launcher")
-#@lightbulb.implements(lightbulb.SlashCommand)
-#async def unlock_launcher(ctx: lightbulb.SlashContext) -> None:
-#    global access_status_message
-#    access_status_message = 'Access Allowed'
-#    await ctx.respond('Access status changed to Allowed.')
-
-#broken
-#@bot.command()
-#@lightbulb.command("lock-launcher", "Lock the launcher")
-#@lightbulb.implements(lightbulb.SlashCommand)
-#async def lock_launcher(ctx: lightbulb.SlashContext) -> None:
-#    global access_status_message
-#    access_status_message = 'Access Denied'
-#    await ctx.respond('Access status changed to Denied.')
-
 #announcement adder
 @bot.command()
-@lightbulb.option("message", "The message of the announcement")
+@lightbulb.option("message", "The message of the announcement", required=True)
 @lightbulb.command("add-announcement", "Add a new announcement")
 @lightbulb.implements(lightbulb.SlashCommand)
 async def add_announcement_command(ctx: lightbulb.SlashContext) -> None:
     # Static variables for author and avatar change if needed
-    author = "ApfelTeeSaft"
-    avatar = "https://media.discordapp.net/attachments/786639486041587762/1175142438625611786/avatar.png"
+    author = ctx.member.display_name
+    avatar = str(ctx.member.avatar_url)
 
     # Access the value of the "message" option
     message = ctx.options.message
@@ -109,7 +111,20 @@ async def add_announcement_command(ctx: lightbulb.SlashContext) -> None:
     save_announcements()
     await ctx.respond("Announcement added successfully")
 
-# announcement remover next 
+@bot.command()
+@lightbulb.option("url", "the url to download from", required=True)
+@lightbulb.command("change-download-url", "change the download url in the launcher")
+@lightbulb.implements(lightbulb.SlashCommand)
+async def change_url(ctx: lightbulb.SlashContext) -> None:
+    url = ctx.options.url
+    new_url = {
+        "downloadurl": url
+    }
+    url_data = load_url()  # Call load_url to get the data
+    url_data.clear()
+    url_data.append(new_url)  # Use append instead of insert
+    save_url()
+    await ctx.respond("Changed url!")
 
 # Version command
 @bot.command()
@@ -124,7 +139,7 @@ async def get_version(ctx: lightbulb.SlashContext) -> None:
         print(version_data)
 
         if version_data["version"] == "0.3":
-            await ctx.respond(f"Launcher Version: 0.3\nBackend Version: Soon...\nMatchmaker Version: Soon...\nGameserver Version: Soon...")
+            await ctx.respond(f"Launcher Version: 0.3\nBackend Version: Backend not Found!\nMatchmaker Version: Matchmaker not Found!\nGameserver Version: Gameserver not Found!")
         else:
             await ctx.respond("Error getting Version list!")
 
